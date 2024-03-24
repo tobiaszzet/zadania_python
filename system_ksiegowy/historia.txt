@@ -1,0 +1,1 @@
+["dodano 100 z\u0142", "Do konta dodano 100.0 zl", "Sprzedano 1 sztuk produktu kosiarka za 1000.0 zl", "Kupiono 5 sztuk produktu grabie za 60.0 zl", "Sprzedano 18 sztuk produktu tyczka za 12.0 zl", "Sprzedano 1 sztuk produktu pi\u0142a \u0142a\u0144cuchowa za 560.0 zl"]
