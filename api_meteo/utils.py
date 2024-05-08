@@ -61,22 +61,15 @@ def load_data_from_api_response_to_dict(data_from_api):
     return dict
 
 
-def will_it_rain(data, city, date):
-
+def will_it_rain(data, date):
     for key, value in data.items():
         if key == date:
             if value == 0.0:
-                print("Nie będzie padać")
+                return "nie będzie padać"
             elif value > 0.0:
-                print("Będzie padać")
+                return "będzie padać"
             else:
-                print("Co będzie, to będzie")
+                return "co będzie, to będzie"
         else:
             continue
-
-
-
-
-
-
 

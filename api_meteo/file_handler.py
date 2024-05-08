@@ -1,3 +1,4 @@
+from utils import will_it_rain
 import json
 
 
@@ -30,3 +31,37 @@ class FileHandler:
                     break
             else:
                 self.data[city] = data_api
+
+    def __setitem__(self, key, value):
+        city, date = key
+        city_data = self.data.get("city")
+        if city_data:
+            self.data[city][date] = value
+        else:
+            self.data[city] = {}
+            self.data[city][date] = value
+
+    def __getitem__(self, item):
+        city_get, date_get = item
+        selected_city = self.data.get(city_get)
+        if selected_city:
+            for city_date, info in selected_city.items():
+                if city_date == date_get:
+                    forecast = will_it_rain(selected_city, date_get)
+                    print(f'w mieście {city_get} dnia {date_get} {forecast}')
+        return None
+
+    def items(self):
+        for city_key, city_data in self.data.items():
+            for city_date, rain_amount in city_data.items():
+                yield f"({city_date}, {rain_amount})"
+
+    def __iter__(self):
+        for city_key, city_data in self.data.items():
+            for city_date, rain_amount in city_data.items():
+                yield city_date
+
+
+
+
+
