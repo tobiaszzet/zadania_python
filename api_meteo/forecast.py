@@ -19,13 +19,12 @@ data_for_forecast = get_data_from_file(file_handler.data, city, date)
 forecast = will_it_rain(data_for_forecast, date)
 print(f'w mieście {city} dnia {date} {forecast}')
 
-file_handler[("Dortmund", "2024-05-12")]
+print(file_handler[("Dortmund", "2024-05-12")])
 file_handler[("Zebrzydowice", "2024-04-22")] = 0.3
 file_handler.save_data_to_file()
 
 for weather_data in file_handler.items():
     print(weather_data)
 
-for weather_data in file_handler:
-    print(weather_data)
-
+for city in file_handler:
+    print(city)
