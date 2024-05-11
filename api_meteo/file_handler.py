@@ -48,20 +48,14 @@ class FileHandler:
             for city_date, info in selected_city.items():
                 if city_date == date_get:
                     forecast = will_it_rain(selected_city, date_get)
-                    print(f'w mieście {city_get} dnia {date_get} {forecast}')
+                    return f'w mieście {city_get} dnia {date_get} {forecast}'
         return None
 
     def items(self):
         for city_key, city_data in self.data.items():
             for city_date, rain_amount in city_data.items():
-                yield f"({city_date}, {rain_amount})"
+                forecast = will_it_rain(city_data, city_date)
+                yield f"({city_date}: {forecast})"
 
     def __iter__(self):
-        for city_key, city_data in self.data.items():
-            for city_date, rain_amount in city_data.items():
-                yield city_date
-
-
-
-
-
+        return iter(self.data)
