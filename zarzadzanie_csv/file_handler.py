@@ -38,7 +38,6 @@ class CSVFileHandler(FileHandler):
                 for value in line:
                     temp_line.append(value)
                 temporary.append(temp_line)
-        print(f"temporary {temporary}")
         self.data = temporary
 
     def save_to_file(self):

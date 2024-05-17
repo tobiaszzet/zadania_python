@@ -17,8 +17,6 @@ if not os.path.exists(input_file):
 if not os.path.exists(output_file):
     print("Plik wyjściowy nie istnieje. Zmiany nie zostały zapisane do pliku")
 
-input_file_handler = None
-output_file_handler = None
 
 if input_file.endswith(".txt"):
     input_file_handler = TXTFileHandler(input_file, output_file, changes)
@@ -29,7 +27,7 @@ elif input_file.endswith("json"):
 elif input_file.endswith("csv"):
     input_file_handler = CSVFileHandler(input_file, output_file, changes)
 else:
-    print("nie mamy takiego pliku")
+    print("Nie mamy takiego pliku")
 
 
 if output_file.endswith(".txt"):
@@ -41,7 +39,7 @@ elif output_file.endswith("json"):
 elif output_file.endswith("csv"):
     output_file_handler = CSVFileHandler(input_file, output_file, changes)
 else:
-    print("nie mamy takiego pliku")
+    print("Nie mamy takiego pliku")
 
 input_file_handler.read_input_file()
 print(f"input: {input_file_handler.data}")
