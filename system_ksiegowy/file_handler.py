@@ -17,7 +17,7 @@ class FileHandler:
             dane = json.loads(file.read())
             return dane.get("stan_magazynu")
 
-    def odczyt_danych_file_with_history_path(self):
+    def odczyt_danych_file_with_history(self):
         with open(self.file_with_history) as file:
             dane = json.loads(file.read())
             return dane

@@ -1,105 +1,131 @@
+from manager import manager
+
 print("Witaj w sklepie Z MOTYKĄ NA ZIEMIĘ. Co chcesz zrobić?")
-print("dostępne komendy:\n- saldo\n- sprzedaż\n- zakup\n- konto\n- lista\n- magazyn\n- przegląd\n- koniec")
 
-from file_handler import FileHandler
-instancja_file_handlera = FileHandler(file_with_balance_path= "saldo_konta.txt",
-                                      file_with_warehouse_path= "stan_magazynu.json",
-                                      file_with_history_path= "historia.txt")
 
-saldo =  float(instancja_file_handlera.odczyt_danych_z_file_with_balance())
-stan_magazynu = instancja_file_handlera.odczyt_danych_z_file_with_warehouse()
+@manager.assign("saldo")
+def saldo(manager):
+    wplata = float(input("Podaj kwotę, którą chcesz dodać lub wyciągnąć z konta: "))
+    manager.saldo += wplata
+    manager.przeglad.append(f"Do konta dodano {wplata} zl")
 
-przeglad = instancja_file_handlera.odczyt_danych_file_with_history_path()
-koniec = False
 
-while not koniec:
-    komenda = input("Wprowadź odpowiednią komendę: ")
-
-    if komenda == "koniec":
-        koniec = True
-        print("zakończono program")
-        instancja_file_handlera.zapis_do_plikow_balance_warehouse(budzet=str(saldo), stan_magazynu= stan_magazynu)
-        instancja_file_handlera.zapis_historii(historia=przeglad)
-
-    elif komenda == "saldo":
-        wplata = float(input("Podaj kwotę, którą chcesz dodać lub wyciągnąć z konta: "))
-        saldo += wplata
-        przeglad.append(f"Do konta dodano {wplata} zl")
-
-    elif komenda == "sprzedaż":
-        sprzedawany_produkt = input("Jaki produkt chcesz sprzedać?: ")
-        cena_sprzedawanego_prod = float(input("Podaj cenę produktu: "))
-        sprzedanych_sztuk = int(input("Podaj liczbę sztuk: "))
-        produkt_sprzedany = False
-        for prod in stan_magazynu:
-            if prod.get("nazwa_produktu") == sprzedawany_produkt:
-                if (prod.get("sztuk") - sprzedanych_sztuk) >= 0:
-                    prod["sztuk"] = prod["sztuk"] - sprzedanych_sztuk
-                    saldo += sprzedanych_sztuk * cena_sprzedawanego_prod
-                    przeglad.append(f"Sprzedano {sprzedanych_sztuk} sztuk produktu {sprzedawany_produkt} za {cena_sprzedawanego_prod} zl")
-                    produkt_sprzedany = True
-                elif (prod.get("sztuk") - sprzedanych_sztuk) <= 0:
-                    print(f"Niestety nie mamy tylu sztuk w magazynie. Liczba dostępnych sztuk: {prod["sztuk"]}")
-            else:
-                continue
-        if produkt_sprzedany == False:
-            print("Nie mamy takiego produktu")
-
-    elif komenda == "zakup":
-        kupowany_produkt = input("Podaj nazwę produktu: ")
-        cena_kupowanego_prod = float(input("Podaj cenę produktu: "))
-        sztuk_kupowanego_prod = int(input("Podaj liczbę sztuk: "))
-        produkt_w_magazynie = False
-        for produkt in stan_magazynu:
-            if produkt.get("nazwa_produktu") == kupowany_produkt and cena_kupowanego_prod * sztuk_kupowanego_prod <= saldo:
-                produkt_w_magazynie = True
-                produkt["sztuk"] = produkt["sztuk"] + sztuk_kupowanego_prod
-                saldo = saldo - (cena_kupowanego_prod * sztuk_kupowanego_prod)
-                przeglad.append(f"Kupiono {sztuk_kupowanego_prod} sztuk produktu {kupowany_produkt} za {cena_kupowanego_prod} zl")
-                break
-            else:
-                continue
-        if not produkt_w_magazynie and cena_kupowanego_prod * sztuk_kupowanego_prod <= saldo:
-            stan_magazynu.append({
-                "nazwa_produktu" : kupowany_produkt,
-                "cena" : cena_kupowanego_prod,
-                "sztuk" : sztuk_kupowanego_prod
-            })
-            przeglad.append(f"Kupiono {sztuk_kupowanego_prod} sztuk produktu {kupowany_produkt} za {cena_kupowanego_prod} zl")
-            saldo = saldo - (cena_kupowanego_prod * sztuk_kupowanego_prod)
-        elif (cena_kupowanego_prod * sztuk_kupowanego_prod) > saldo:
-            print("Nie masz wystarczających środków na koncie na taki zakup.")
+@manager.assign("sprzedaz")
+def sprzedaz(manager):
+    sprzedawany_produkt = input("Jaki produkt chcesz sprzedać?: ")
+    cena_sprzedawanego_prod = float(input("Podaj cenę produktu: "))
+    sprzedanych_sztuk = int(input("Podaj liczbę sztuk: "))
+    produkt_sprzedany = False
+    for prod in manager.stan_magazynu:
+        if prod.get("nazwa_produktu") == sprzedawany_produkt:
+            if (prod.get("sztuk") - sprzedanych_sztuk) >= 0:
+                prod["sztuk"] = prod["sztuk"] - sprzedanych_sztuk
+                manager.saldo += sprzedanych_sztuk * cena_sprzedawanego_prod
+                manager.przeglad.append(
+                    f"Sprzedano {sprzedanych_sztuk} sztuk produktu {sprzedawany_produkt} za {cena_sprzedawanego_prod} zl")
+                produkt_sprzedany = True
+            elif (prod.get("sztuk") - sprzedanych_sztuk) <= 0:
+                sztuk = prod["sztuk"]
+                print(f"Niestety nie mamy tylu sztuk w magazynie. Liczba dostępnych sztuk: {sztuk}")
         else:
+            continue
+    if produkt_sprzedany == False:
+        print("Nie mamy takiego produktu")
+
+
+@manager.assign("zakup")
+def zakup(manager):
+    kupowany_produkt = input("Podaj nazwę produktu: ")
+    cena_kupowanego_prod = float(input("Podaj cenę produktu: "))
+    sztuk_kupowanego_prod = int(input("Podaj liczbę sztuk: "))
+    produkt_w_magazynie = False
+    for produkt in manager.stan_magazynu:
+        if produkt.get(
+                "nazwa_produktu") == kupowany_produkt and cena_kupowanego_prod * sztuk_kupowanego_prod <= manager.saldo:
+            produkt_w_magazynie = True
+            produkt["sztuk"] = produkt["sztuk"] + sztuk_kupowanego_prod
+            manager.saldo = manager.saldo - (cena_kupowanego_prod * sztuk_kupowanego_prod)
+            manager.przeglad.append(
+                f"Kupiono {sztuk_kupowanego_prod} sztuk produktu {kupowany_produkt} za {cena_kupowanego_prod} zl")
+            break
+        else:
+            continue
+    if not produkt_w_magazynie and cena_kupowanego_prod * sztuk_kupowanego_prod <= manager.saldo:
+        manager.stan_magazynu.append({
+            "nazwa_produktu": kupowany_produkt,
+            "cena": cena_kupowanego_prod,
+            "sztuk": sztuk_kupowanego_prod
+        })
+        manager.przeglad.append(
+            f"Kupiono {sztuk_kupowanego_prod} sztuk produktu {kupowany_produkt} za {cena_kupowanego_prod} zl")
+        manager.saldo = manager.saldo - (cena_kupowanego_prod * sztuk_kupowanego_prod)
+    elif (cena_kupowanego_prod * sztuk_kupowanego_prod) > manager.saldo:
+        print("Nie masz wystarczających środków na koncie na taki zakup.")
+
+
+@manager.assign("konto")
+def konto(manager):
+    print(f"Stan sklepowego konta wynosi: {manager.saldo}")
+
+
+@manager.assign("lista")
+def lista(manager):
+    for produkt in manager.stan_magazynu:
+        print(f"Oto aktualny stan magazynu \n{produkt}")
+
+
+@manager.assign("magazyn")
+def magazyn(manager):
+    produkt = input("Podaj nazwę produktu dla którego chcesz wyświetlić informacje: ")
+    produkt_index = 0
+    for prod in manager.stan_magazynu:
+        if prod.get("nazwa_produktu") == produkt:
+            print(manager.stan_magazynu[produkt_index])
+            break
+        else:
+            produkt_index += 1
             continue
 
 
+@manager.assign("przeglad")
+def przeglad(manager):
+    od = (input("Podaj zakres. Od którego indeksu chcesz wyświetlić przegląd?: "))
+    do = (input("Do którego?: "))
+    indexy = len(manager.przeglad)
+    if od == "" or do == "":
+        print(manager.przeglad)
+    elif (int(od) > indexy or int(od) < 0) or int(do) > indexy:
+        print(f"Wprowadziłeś zakres spoza listy. Liczba zapisanych akcji wynosi {indexy}")
+    else:
+        print(manager.przeglad[int(od):int(do)])
+
+
+@manager.assign("koniec")
+def koniec(manager):
+    print("zakończono program")
+    manager.instancja_file_handlera.zapis_do_plikow_balance_warehouse(budzet=str(manager.saldo), stan_magazynu=manager.stan_magazynu)
+    manager.instancja_file_handlera.zapis_historii(historia=manager.przeglad)
+
+koniec = False
+
+while not koniec:
+    print("dostępne komendy:\n - saldo\n- sprzedaz\n- zakup\n- konto\n- lista\n- magazyn\n- przeglad\n- koniec")
+    komenda = input("Wprowadź odpowiednią komendę: ")
+
+    if komenda == "saldo":
+        manager.execute("saldo")
+    elif komenda == "sprzedaz":
+        manager.execute("sprzedaz")
+    elif komenda == "zakup":
+        manager.execute("zakup")
     elif komenda == "konto":
-        print(f"Stan sklepowego konta wynosi: {saldo}")
-
+        manager.execute("konto")
     elif komenda == "lista":
-        for produkt  in stan_magazynu:
-            print(f"Oto aktualny stan magazynu \n{produkt}")
-
+        manager.execute("lista")
     elif komenda == "magazyn":
-        produkt = input("Podaj nazwę produktu dla którego chcesz wyświetlić informacje: ")
-        produkt_index = 0
-        for prod in stan_magazynu:
-            if prod.get("nazwa_produktu") == produkt:
-                print(stan_magazynu[produkt_index])
-                break
-            else:
-                produkt_index += 1
-                continue
-
-    elif komenda == "przegląd":
-        od = (input("Podaj zakres. Od którego indeksu chcesz wyświetlić przegląd?: "))
-        do = (input("Do którego?: "))
-        indexy = len(przeglad)
-        if od == "" or do == "":
-            print(przeglad)
-        elif (int(od) > indexy or  int(od) < 0) or int(do) > indexy:
-            print(f"Wprowadziłeś zakres spoza listy. Liczba zapisanych akcji wynosi {indexy}")
-        else:
-            print(przeglad[int(od):int(do)])
-
-    print("dostępne komendy:\n - saldo\n- sprzedaż\n- zakup\n- konto\n- lista\n- magazyn\n- przegląd\n- koniec")
+        manager.execute("magazyn")
+    elif komenda == "przeglad":
+        manager.execute("przeglad")
+    elif komenda == "koniec":
+        manager.execute("koniec")
+        koniec = True
