@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block head %}
+{{ super() }}
+<link rel="stylesheet"  href="{{ url_for('static', filename='css/history_style.css') }}" >
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class = "form_and_list">
+<div class="form">
+  <div class="row">
+        <div class="col-8">
+                    <h4 class="form-header text-center">podaj zakres historii</h4>
+        <form method="POST">
+          <div class="mb-3">
+            <label for="input_from" class="form-label">od</label>
+            <input type="number" class="form-control" id="input_from"  name="od">
+          </div>
+          <div class="mb-3">
+            <label for="input_to" class="form-label">do</label>
+            <input type="number" class="form-control" id="input_to" name="do">
+          </div>
+
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+
+        </div>
+    </div>
+</div>
+
+    <div class="table-div">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+            <th scope="col" >id</th>
+          <th scope="col" >opis</th>
+          <th scope="col" >data</th>
+
+        </tr>
+      </thead>
+      <tbody>
+      {% for post in history %}
+        <tr>
+            <td scope="row" >{{post.id}}</td>
+          <td scope="row" >{{post.script}}</td>
+          <td scope="row" >{{post.script_date}}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+</div>
+</div>
+
+{% endblock %}
+
